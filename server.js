@@ -3,62 +3,68 @@
 const express = require('express');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
+const passport = require('passport');
 
-const {router: usersRouter} = require('./users');
+const { PORT, MONGODB_URI } = require('./config');
+const localStrategy = require('./passport/local');
 
-const {PORT, DATABASE_URL} = require('./config');
+const usersRouter = require('./routes/users');
+const authRouter = require('./routes/auth');
 
 const app = express();
 
-// logging
-app.use(morgan('common'));
+// Log all requests. Skip logging during
+app.use(morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'common', {
+  skip: () => process.env.NODE_ENV === 'test'
+}));
+
+// Utilize the Express static webserver, passing in the directory name
+app.use(express.static('public'));
+
+// Utilize the Express `.json()` body parser
+app.use(express.json());
+
+// Utilize the given `strategy`
+passport.use(localStrategy);
 
 app.use('/api', usersRouter);
+app.use('/api', authRouter);
 
-app.use('*', function(req, res) {
-  return res.status(404).json({message: 'Not Found'});
+// Catch-all 404
+app.use(function (req, res, next) {
+  const err = new Error('Not Found');
+  err.status = 404;
+  next(err);
 });
 
-// referenced by both runServer and closeServer. closeServer
-// assumes runServer has run and set `server` to a server object
-let server;
-
-function runServer() {
-  return new Promise((resolve, reject) => {
-    mongoose.connect(DATABASE_URL, {useMongoClient: true}, err => {
-      if (err) {
-        return reject(err);
-      }
-      server = app.listen(PORT, () => {
-        console.log(`Your app is listening on port ${PORT}`);
-        resolve();
-      })
-        .on('error', err => {
-          mongoose.disconnect();
-          reject(err);
-        });
-    });
+// Catch-all Error handler
+// Add NODE_ENV check to prevent stacktrace leak
+app.use(function (err, req, res, next) {
+  res.status(err.status || 500);
+  res.json({
+    message: err.message,
+    error: app.get('env') === 'development' ? err : {}
   });
-}
+});
 
-function closeServer() {
-  return mongoose.disconnect().then(() => {
-    return new Promise((resolve, reject) => {
-      console.log('Closing server');
-      server.close(err => {
-        if (err) {
-          return reject(err);
-        }
-        resolve();
-      });
-    });
-  });
-}
-
+// Listen for incoming connections
 if (require.main === module) {
-  runServer().catch(err => console.error(err));
+  mongoose.connect(MONGODB_URI)
+    .then(instance => {
+      const conn = instance.connections[0];
+      console.info(`Connected to: mongodb://${conn.host}:${conn.port}/${conn.name}`);
+    })
+    .catch(err => {
+      console.error(`ERROR: ${err.message}`);
+      console.error('\n === Did you remember to start `mongod`? === \n');
+      console.error(err);
+    });
+    
+  app.listen(PORT, function () {
+    console.info(`Server listening on ${this.address().port}`);
+  }).on('error', err => {
+    console.error(err);
+  });
 }
 
-module.exports = {app, runServer, closeServer};
-
+module.exports = app; // Export for testing

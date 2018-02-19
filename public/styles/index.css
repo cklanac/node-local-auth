@@ -1,0 +1,57 @@
+* {
+  box-sizing: border-box;
+}
+
+input,
+textarea,
+button {
+  margin: 0;
+}
+
+/* Make header sizes more sane */
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+}
+
+h1 {
+  font-size: large;
+}
+
+h2 {
+  font-size: medium;
+}
+
+h3 {
+  font-size: small;
+}
+
+section {
+  padding: 20px;
+}
+
+.signup-login fieldset {
+  display: inline-block;
+}
+
+.signup-login input,
+.signup-login button {
+  margin: 0.5em;
+}
+
+.signup-login label {
+  width: 5em;
+  display: inline-block;
+}
+
+.error-message {
+  color:red;
+  /* display:none; */
+}
+.success-message {
+  color:limegreen;
+  /* display:none; */
+}
