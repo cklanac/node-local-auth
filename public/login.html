@@ -20,11 +20,11 @@
 				<legend>Login</legend>
 				<div>
 					<label for="username">Username</label>
-					<input type="text" name="username" class="js-username-entry" value="">
+					<input type="text" name="username" class="js-username-entry">
 				</div>
 				<div>
 					<label for="password">Password</label>
-					<input type="password" name="password" class="js-password-entry" value="">
+					<input type="password" name="password" class="js-password-entry">
 				</div>
 				<button type="reset">Reset</button>
 				<button type="submit">Login</button>
@@ -32,11 +32,18 @@
 		</form>
 	</section>
 
+	<section>
+		<button id="js-get-secret-with-unpw">Get Secret with UN/PW</button>
+		<button id="js-get-secret-wout-unpw">Get Secret w/o UN/PW!</button>
+		
+		<div class="js-message"></div>
+	</section>
+
 	<script src="//code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js" integrity="sha256-ABVkpwb9K9PxubvRrHMkk6wmWcIHUE9eBxNZLXYQ84k="
 	 crossorigin="anonymous"></script>
 
-
+	<script type="text/javascript" src="scripts/api.js"></script>
 	<script type="text/javascript" src="scripts/index.js"></script>
 </body>
 

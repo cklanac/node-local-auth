@@ -1,4 +1,4 @@
-/* global $ store */
+/* global $ store api */
 'use strict';
 
 $(document).ready(function () {
@@ -9,26 +9,18 @@ $(document).ready(function () {
 
     const signupForm = $(event.currentTarget);
     const newUser = {
-      firstname: signupForm.find('.js-firstname-entry').val(),
-      lastname: signupForm.find('.js-lastname-entry').val(),
+      fullname: signupForm.find('.js-fullname-entry').val(),
       username: signupForm.find('.js-username-entry').val(),
       password: signupForm.find('.js-password-entry').val()
     };
 
-    $.ajax({
-      type: 'POST',
-      url: '/api/users',
-      contentType: 'application/json',
-      dataType: 'json',
-      processData: false,
-      data: JSON.stringify(newUser)
-    })
+    api.post('/api/users', newUser)
       .then(response => {
         signupForm[0].reset();
-        console.info(`Thank you, ${response.firstname || response.username} for signing up!`);
+        $('.js-message').text(`Thank you, ${response.fullname || response.username} for signing up!`);
       })
       .catch(err => {
-        console.error(err.responseJSON.message);
+        $('.js-message').text(err.responseJSON.message);
       });
   });
 
@@ -36,27 +28,48 @@ $(document).ready(function () {
     event.preventDefault();
 
     const loginForm = $(event.currentTarget);
-    const loginUNPW = {
+    const loginInfo = {
       username: loginForm.find('.js-username-entry').val(),
       password: loginForm.find('.js-password-entry').val()
     };
 
-    $.ajax({
-      type: 'POST',
-      url: '/api/login',
-      contentType: 'application/json',
-      dataType: 'json',
-      processData: false,
-      data: JSON.stringify(loginUNPW)
-    })
+    api.post('/api/login', loginInfo)
       .then(response => {
-        store.username = loginUNPW.username;
-        store.password = loginUNPW.password;
+        store.username = loginInfo.username;
+        store.password = loginInfo.password;
         loginForm[0].reset();
-        console.info(`Welcome back, ${response.firstname || response.username}!`);
+        $('.js-message').text(`Welcome back, ${response.fullname || response.username}!`);
       })
       .catch(err => {
-        console.error(err.responseJSON.message);
+        $('.js-message').text(err.responseJSON.message);
+      });
+  });
+
+  $('#js-get-secret-with-unpw').on('click', event => {
+    event.preventDefault();
+
+    const loginInfo = {
+      username: store.username,
+      password: store.password
+    };
+
+    api.post('/api/protected', loginInfo)
+      .then(response => {
+        $('.js-message').text(response.data);
+      })
+      .catch(err => {
+        $('.js-message').text(err.responseJSON.message);
+      });
+  });
+  $('#js-get-secret-wout-unpw').on('click', event => {
+    event.preventDefault();
+    
+    api.post('/api/protected')
+      .then(response => {
+        $('.js-message').text(response);
+      })
+      .catch(err => {
+        $('.js-message').text(err.responseJSON.message);
       });
   });
 

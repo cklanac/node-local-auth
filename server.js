@@ -30,6 +30,15 @@ passport.use(localStrategy);
 app.use('/api', usersRouter);
 app.use('/api', authRouter);
 
+const localAuth = passport.authenticate('local', { session: false, failWithError: true });
+
+// A protected endpoint which needs a valid JWT to access it
+app.post('/api/protected', localAuth, (req, res) => {
+  return res.json({
+    data: 'rosebud'
+  });
+});
+
 // Catch-all 404
 app.use(function (req, res, next) {
   const err = new Error('Not Found');
@@ -59,7 +68,7 @@ if (require.main === module) {
       console.error('\n === Did you remember to start `mongod`? === \n');
       console.error(err);
     });
-    
+
   app.listen(PORT, function () {
     console.info(`Server listening on ${this.address().port}`);
   }).on('error', err => {
